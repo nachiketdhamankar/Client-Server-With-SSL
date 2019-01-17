@@ -7,7 +7,7 @@ import argparse
 import ssl
 
 HOST = ''
-PORT = 27995
+PORT = 27996
 NUID = '001475954'
 isSSLset = False
 
@@ -24,10 +24,7 @@ def solveExpression(data):
 
 def run():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        if isSSLset is True:
-            print('SSL is Set')
-            PORT = 27996
-            s = ssl.wrap_socket(s, ssl_version=3)
+        s = ssl.wrap_socket(s, ssl_version=3)
         s.connect((HOST, PORT))
         send_Hello_message(s)
         while True:
@@ -66,7 +63,7 @@ def gatherArguments():
     parser = argparse.ArgumentParser(description = 'Refer proper syntax')
     parser.add_argument('hostname', help = 'Enter the hostname.')
     parser.add_argument('nuid', help = 'Enter the NUID')
-    parser.add_argument('--port','-p', help = 'Enter port number (default: 27995)', default = 27995)
+    parser.add_argument('--port','-p', help = 'Enter port number (default: 27996)', default = 27996)
     parser.add_argument('--setSSL','-s', help = 'Add this option if SSL connection is required', action = 'store_true')
     args = parser.parse_args()
 
