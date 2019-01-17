@@ -7,11 +7,12 @@ import argparse
 
 HOST = ''
 PORT = 27995
-NUID = ''
+NUID = '001475954'
 isSSLset = False
 
 def send_Hello_message(s):
-    s.sendall(b'cs5700spring2019 HELLO 1234\n')
+    str = 'cs5700spring2019 HELLO ' + NUID + '\n'
+    s.sendall(str.encode())
 
 
 def solveExpression(data):
