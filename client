@@ -5,6 +5,30 @@ import argparse
 import ssl
 import logging
 
+"""
+
+This is a simple client for Project 1 of CS5700.
+It has 2 positional arguments - hostname and NUID.
+There are 2 optional arguments - SSL <-s> and PORT <-p port_number>.
+The format of running the program are as follows:
+./client <-p port> <-s> [hostname] [NEU ID]
+
+It uses the inbuilt python libraries to connect to a specified server by sending a 'HELLO' message and solves the equations sent by the server in the 'STATUS' format as required.
+It then sends the 'SOLUTION' message to the server.
+It prints the secret key supplied in the 'BYE' message on the screen. Any other format would result in display of error message and  the termination of program.
+The format of the messages are as follows:
+
+STATUS:
+cs5700spring2019 STATUS [a number] [a math operator] [another number]\n
+
+SOLUTION:
+cs5700spring2019 [the solution]\n
+
+BYE:
+cs5700spring2019 [a 64 byte secret flag] BYE\n
+
+"""
+
 HOST = ''
 PORT = 27995
 NUID = '001475954'
@@ -13,18 +37,32 @@ isDebug = False
 isInfo = False
 
 def send_Hello_message(s):
+    """
+	Sends the 'HELLO' message to the server in the format specified.
+    """
     str = 'cs5700spring2019 HELLO ' + NUID + '\n'
     logging.debug('Sent Hello Message: ' + str + 'EOD')
     s.sendall(str.encode())
 
 
 def solveExpression(data):
+    """
+	Solves the expression as spcified in the 'STATUS' message and sends the solution in the 'SOLUTION' format.
+    """
     split_expression = data.decode("utf-8").split()
     res = eval(split_expression[2] + split_expression[3] + split_expression[4])
-    #res = round(res)
     return ('cs5700spring2019 ' + str(res) + '\n').encode()
 
 def run():
+    """
+	Runs the control for the program. It creates a TCP socket using the socket library. If the SSL option is selected, it wraps the socket in an SSL wrapper ( and uses suitable port).
+	A connection is then established to the server using the provided HOST and PORT.
+	It runs an infinite loop that reads the messages from the server and takes the necessary actions:
+		- First it logs the data received from the server.
+		- Matches the message (data received from the server) to the known and accepted format of message (Either 'STATUS' or 'BYE')
+		- Performs the required action based on the message sent by the server.
+		- If the format is not followed, it prints an error message and returns the control.
+    """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     global PORT
     if isSSLset is True:
@@ -46,7 +84,8 @@ def run():
 
         if not data:
             logger.debug('Empty string! Received message: '+ data + 'EOD')
-            #continue
+            s.close()
+            logger.info('Connection Closed after receiving empty string.')
             return
 
         if "STATUS" in data:
@@ -54,22 +93,31 @@ def run():
             res = solveExpression(data.encode())
             logger.debug('Result Status message: ' + res.decode("utf-8") + 'EOD')
             s.sendall(res)
-
-        # print('Recv: ' + data.decode("utf-8"))
-        # res = solveExpression(data)
-        # print('Result: ' + res.decode("utf-8"))
-        # s.sendall(res)
+            continue
 
         if "BYE" in data:
             logger.debug('Bye Message: ' + data + 'EOD')
-            print(data)
+            key = data.split()
+            key = key[1]
+            print(key)
+            s.close()
+            logger.info('Connection closed after BYE')
+            return
+      
+        else:
+            logger.debug('Unknown format - ' + data + 'EOD')
+            logger.info('Connection closed after unknown format')
+            s.close()
             return
 
-    logger.info('Connection Terminated')
-    s.close()
+    logger.info('Run completed.')
 
 def gatherArguments():
-
+    """
+	This method is used to gather the arguments given by the user and set the required variables. 
+	It uses an inbuilt python library called argparse.
+	To lnow more about this library, kindly go through the documentation on argparse.
+    """
     global NUID
     global PORT
     global HOST
@@ -77,7 +125,7 @@ def gatherArguments():
     global isDebug
     global isInfo
 
-    parser = argparse.ArgumentParser(description = 'Refer proper syntax')
+    parser = argparse.ArgumentParser(description = 'This is simple client program for project-1 for cs5700\n')
     parser.add_argument('hostname', help = 'Enter the hostname.')
     parser.add_argument('nuid', help = 'Enter the NUID')
     parser.add_argument('--port','-p', help = 'Enter port number (default: 27995)', default = 27995)
@@ -104,18 +152,27 @@ def gatherArguments():
 
     NUID = args.nuid
 
+
 if __name__ == '__main__':
+   
+   """
+	This is the main method of the program. It gathers the arguments and then initializes a logger using the in-built logging library. It then gives the control to the run() method.
+	If the run() method catches an exception, it is printed on the screen and the program exits.
+   """
 
+   gatherArguments()
+    
+   if isDebug is True:
+       logging.basicConfig(format='%(message)s',level = logging.DEBUG)
+   elif isInfo is True:
+       logging.basicConfig(format='%(message)s',level = logging.INFO)
+   else:
+       logging.basicConfig(format='%(message)s',level = logging.ERROR)
 
-    gatherArguments()
+   logger = logging.getLogger(__name__)
 
-    if isDebug is True:
-        logging.basicConfig(format='%(message)s',level = logging.DEBUG)
-    elif isInfo is True:
-        logging.basicConfig(format='%(message)s',level = logging.INFO)
-    else:
-        logging.basicConfig(format='%(message)s',level = logging.ERROR)
+   try:
+       run()
+   except:
+       print('Exception found. Exiting the program.')
 
-    logger = logging.getLogger(__name__)
-
-    run()
