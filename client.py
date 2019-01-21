@@ -35,6 +35,7 @@ NUID = '001475954'
 isSSLset = False
 isDebug = False
 isInfo = False
+portSet = False
 
 def send_Hello_message(s):
     """
@@ -65,13 +66,17 @@ def run():
     """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     global PORT
+
     if isSSLset is True:
         logger.info('SSL is Set')
-        PORT = 27996
+        logger.debug('portSet: %s' % portSet)
+        if portSet == False:
+            	PORT = 27996
         s = ssl.wrap_socket(s, ssl_version=3)
     else:
         logger.info('SSL is not set')
 
+    logger.info('Request connection to %s %s' % (HOST, PORT))
     s.connect((HOST, PORT))
     logger.info('Connected to %s %s' % (HOST, PORT))
 
@@ -103,7 +108,7 @@ def run():
             s.close()
             logger.info('Connection closed after BYE')
             return
-      
+
         else:
             logger.debug('Unknown format - ' + data + 'EOD')
             logger.info('Connection closed after unknown format')
@@ -114,7 +119,7 @@ def run():
 
 def gatherArguments():
     """
-	This method is used to gather the arguments given by the user and set the required variables. 
+	This method is used to gather the arguments given by the user and set the required variables.
 	It uses an inbuilt python library called argparse.
 	To lnow more about this library, kindly go through the documentation on argparse.
     """
@@ -124,6 +129,7 @@ def gatherArguments():
     global isSSLset
     global isDebug
     global isInfo
+    global portSet
 
     parser = argparse.ArgumentParser(description = 'This is simple client program for project-1 for cs5700\n')
     parser.add_argument('hostname', help = 'Enter the hostname.')
@@ -138,7 +144,12 @@ def gatherArguments():
         print('Not enough arguments')
 
     if args.port is not None:
-        PORT = args.port
+	if args.port == 27995:
+        	portSet = False
+	else:
+		portSet = True
+
+        PORT = int(args.port)
 
     if args.setSSL is True:
         isSSLset = True
@@ -154,16 +165,16 @@ def gatherArguments():
 
 
 if __name__ == '__main__':
-   
+
    """
 	This is the main method of the program. It gathers the arguments and then initializes a logger using the in-built logging library. It then gives the control to the run() method.
 	If the run() method catches an exception, it is printed on the screen and the program exits.
    """
 
    gatherArguments()
-    
+
    if isDebug is True:
-       logging.basicConfig(format='%(message)s',level = logging.DEBUG)
+       logging.basicConfig(filename = 'log', filemode ='w', format='%(message)s',level = logging.DEBUG)
    elif isInfo is True:
        logging.basicConfig(format='%(message)s',level = logging.INFO)
    else:
@@ -173,6 +184,6 @@ if __name__ == '__main__':
 
    try:
        run()
-   except:
+   except Exception as e:
+       print(str(e))
        print('Exception found. Exiting the program.')
-

@@ -58,8 +58,19 @@ In the program, the follwing tasks are performed [in order]
 	h. Print the secret flag in the 'BYE' message.
 	i. Close the connection and terminate the program.
 	* If any other message is sent by server, the program prints an error and terminates the program.
+4. Since the debug messages are long, they are written to a file called 'log' in the same directory as 'client'. This is only activated with '-d' option.
 
 [EXTRA CREDIT]
 For extra credit, support for SSL connection was required by the socket. The -s parameter would be used to connect using SSL through the port 27996.
 To accomodate this, my program checks if the -s flag was set. If flag was set, it wraps the socket in a SSL wrapper using the in-built SSL library in python and the rest of the program continues as above.
 
+[CHALLENGES]
+1. The first challenge I faced was consuming the arguments from the command line and making the client perform actions based on the arguments. I overcame this challenge by using the argparse library.
+2. The next challenge was to use the appropriate port for the connection and override the default port when it is specified by the uesr. This was solved by using the 'default' option in argparse and a global variable.
+3. The third challenge was to keep a track of the logs and understanding exactly what the program did. The logging library helped me solve this.
+
+[TEST]
+- Initially I wrote a simple server myself on the local machine to understand the code and how it works.
+- Once that started working as expected, I added the functionality of providing the port and setting the SSL option.
+- Finally I ran the code on the server to ensure the output was as expected.
+- Testing the port option was a little tricky because the connection would not be accepted and hence I had to rely on log messages to ensure it was working fine.
