@@ -1,5 +1,5 @@
 This is a README for project-1 CS5700.
-The problem statement states requires us to code a client that communicates with a server through a given port.
+The problem statement requires us to code a client that communicates with a server through a given port.
 
 The client should send a 'HELLO' message in the following format:
 cs5700spring2019 HELLO [your NEU ID]\n
